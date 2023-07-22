@@ -1,0 +1,25 @@
+spring:
+  main:
+    allow-circular-references: true
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://185.78.165.239:3306/spring_starter?useUnicode=yes&characterEncoding=UTF-8
+    username: root
+    password: YmIUGQw6KeJmIPnG??&xh!
+  jpa:
+    show-sql: true
+    generate-ddl: true
+    hibernate:
+      ddl-auto: update
+      dialect: org.hibernate.dialect.MySQL5Dialect
+ii:
+  jwt:
+    issuer: natsukashiiz
+    expirationMs: 3600000
+    private-key: classpath:certs/private.pem
+    public-key: classpath:certs/public.pem
+
+logging:
+  level:
+    com.natsukashiiz: DEBUG
+    org.springframework.web: DEBUG
