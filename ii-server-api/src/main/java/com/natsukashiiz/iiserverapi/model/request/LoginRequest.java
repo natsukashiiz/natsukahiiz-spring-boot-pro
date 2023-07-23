@@ -1,6 +1,7 @@
 package com.natsukashiiz.iiserverapi.model.request;
 
 import lombok.Data;
+import lombok.ToString;
 
 /**
  * {
@@ -9,6 +10,7 @@ import lombok.Data;
  * }
  */
 @Data
+@ToString(exclude = "password")
 public class LoginRequest {
     private String username;
     private String password;

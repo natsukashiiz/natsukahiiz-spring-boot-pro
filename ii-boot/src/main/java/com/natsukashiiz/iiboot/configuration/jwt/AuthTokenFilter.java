@@ -23,11 +23,9 @@ import java.util.Objects;
 public class AuthTokenFilter extends OncePerRequestFilter {
     @Resource
     private JwtService tokenService;
-    private final UserDetailsService userDetailsService;
+    @Resource
+    private UserDetailsService userDetailsService;
 
-    public AuthTokenFilter(UserDetailsService userDetailsService) {
-        this.userDetailsService = userDetailsService;
-    }
 
     @Override
     protected void doFilterInternal(

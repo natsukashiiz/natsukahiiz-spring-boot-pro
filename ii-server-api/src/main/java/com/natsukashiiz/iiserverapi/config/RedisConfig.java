@@ -8,14 +8,13 @@ import org.springframework.data.redis.connection.jedis.JedisConnectionFactory;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.repository.configuration.EnableRedisRepositories;
 import org.springframework.data.redis.serializer.GenericToStringSerializer;
+import org.springframework.data.redis.serializer.JdkSerializationRedisSerializer;
+import org.springframework.data.redis.serializer.StringRedisSerializer;
 
 @Configuration
-@ComponentScan("com.natsukashiiz.iiserverapi")
-@EnableRedisRepositories(basePackages = "com.natsukashiiz.iiserverapi.repository")
-@PropertySource("classpath:application.yml")
 public class RedisConfig {
     @Bean
-    JedisConnectionFactory jedisConnectionFactory() {
+    public JedisConnectionFactory jedisConnectionFactory() {
         return new JedisConnectionFactory();
     }
 
@@ -23,7 +22,12 @@ public class RedisConfig {
     public RedisTemplate<String, Object> redisTemplate() {
         final RedisTemplate<String, Object> template = new RedisTemplate<>();
         template.setConnectionFactory(jedisConnectionFactory());
-        template.setValueSerializer(new GenericToStringSerializer<>(Object.class));
+        template.setKeySerializer(new StringRedisSerializer());
+        template.setHashValueSerializer(new StringRedisSerializer());
+        template.setHashKeySerializer(new JdkSerializationRedisSerializer());
+        template.setValueSerializer(new JdkSerializationRedisSerializer());
+        template.setEnableTransactionSupport(true);
+        template.afterPropertiesSet();
         return template;
     }
 }

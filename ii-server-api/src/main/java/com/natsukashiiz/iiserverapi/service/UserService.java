@@ -18,11 +18,13 @@ import com.natsukashiiz.iiserverapi.model.response.UserResponse;
 import com.natsukashiiz.iiserverapi.repository.SignedHistoryRepository;
 import com.natsukashiiz.iiserverapi.repository.UserRepository;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
+import java.util.Date;
 import java.util.Objects;
 import java.util.Optional;
 
@@ -37,6 +39,8 @@ public class UserService {
     private PasswordEncoder passwordEncoder;
     @Resource
     private JwtService tokenService;
+    @Resource
+    private RedisTemplate<String, Boolean> redisTemplate;
 
     public Result<?> getSelf(UserDetailsImpl auth) {
         Optional<User> opt = this.userRepository.findByUsername(auth.getUsername());
@@ -178,6 +182,12 @@ public class UserService {
             return ResponseUtil.error(ResponseCode.INVALID_USERNAME_PASSWORD);
         }
 
+        Boolean loggedIn = redisTemplate.opsForValue().get(username);
+        if (Boolean.TRUE.equals(loggedIn)) {
+            log.debug("Login-[block]:(already logged in). uid:{}, request:{}", user.getId(), request);
+            return ResponseUtil.unknown();
+        }
+
         String ipv4 = CommonUtil.getIpAddress(httpRequest);
         String userAgent = CommonUtil.getUserAgent(httpRequest);
         DeviceCode device = CommonUtil.getDevice(userAgent);
@@ -191,7 +201,14 @@ public class UserService {
         this.historyRepository.save(history);
 
         // generate token
-        return ResponseUtil.success(this.genToken(user));
+        TokenResponse token = this.genToken(user);
+
+        // redis
+        redisTemplate.opsForValue().set(username, true);
+        redisTemplate.expireAt(username, new Date(token.getAccessExpire()));
+
+        // generate token
+        return ResponseUtil.success(token);
     }
 
     public Result<?> refreshToken(TokenRefreshRequest request) {
@@ -213,7 +230,18 @@ public class UserService {
             return ResponseUtil.error(ResponseCode.UNAUTHORIZED);
         }
         User user = opt.get();
+        Boolean loggedIn = redisTemplate.opsForValue().get(username);
+        if (Boolean.TRUE.equals(loggedIn)) {
+            log.debug("RefreshToken-[block]:(already logged in). uid:{}, request:{}", user.getId(), request);
+            return ResponseUtil.unknown();
+        }
+
         TokenResponse token = this.genToken(user);
+
+        // redis
+        redisTemplate.opsForValue().set(username, true);
+        redisTemplate.expireAt(username, new Date(token.getAccessExpire()));
+
         return ResponseUtil.success(token);
     }
 

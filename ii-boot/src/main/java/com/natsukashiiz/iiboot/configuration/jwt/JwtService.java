@@ -38,7 +38,7 @@ public class JwtService {
     }
 
     private Token generateRefreshToken(Authentication authentication) {
-        return generateToken(authentication, this.jwtProperties.getExpirationMs() * 2, false);
+        return generateToken(authentication, this.jwtProperties.getExpirationMs() + 60000, false);
     }
 
     private Token generateToken(Authentication authentication, long expire, boolean all) {
@@ -48,12 +48,12 @@ public class JwtService {
                 .issuer(this.jwtProperties.getIssuer())
                 .issuedAt(now)
                 .expiresAt(expiresAt)
-                .id(UUID.randomUUID().toString());
+                .id(UUID.randomUUID().toString())
+                .claim("name", authentication.getName());
 
         if (all) {
             builder
                     .claim("uid", authentication.getUid())
-                    .claim("name", authentication.getName())
                     .claim("email", authentication.getEmail());
         }
 
