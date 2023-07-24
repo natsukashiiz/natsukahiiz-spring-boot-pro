@@ -10,7 +10,7 @@ import com.natsukashiiz.iicommon.model.Result;
 import com.natsukashiiz.iicommon.utils.CommonUtil;
 import com.natsukashiiz.iicommon.utils.MapperUtil;
 import com.natsukashiiz.iicommon.utils.ResponseUtil;
-import com.natsukashiiz.iicommon.utils.ValidateUtil;
+import com.natsukashiiz.iicommon.utils.ValidationUtil;
 import com.natsukashiiz.iiserverapi.entity.SignHistory;
 import com.natsukashiiz.iiserverapi.entity.User;
 import com.natsukashiiz.iiserverapi.model.request.*;
@@ -39,26 +39,18 @@ public class UserService {
     private JwtService tokenService;
 
     public Result<?> getSelf(UserDetailsImpl auth) {
-        Optional<User> opt = this.userRepository.findByUsername(auth.getUsername());
-        if (!opt.isPresent()) {
-            return ResponseUtil.error(ResponseCode.UNAUTHORIZED);
-        }
-
-        User user = opt.get();
+        User user = this.userRepository.findById(auth.getId()).get();
         UserResponse response = this.build(user);
         return ResponseUtil.success(response);
     }
 
     public Result<?> update(UserDetailsImpl auth, UpdateUserRequest request) {
-        if (ValidateUtil.invalidEmail(request.getEmail())) {
+        if (ValidationUtil.invalidEmail(request.getEmail())) {
+            log.warn("Update-[block]:(validation email). request:{}, uid:{}", request, auth.getId());
             return ResponseUtil.error(ResponseCode.INVALID_EMAIL);
         }
-        Optional<User> opt = this.userRepository.findByUsername(auth.getUsername());
-        if (!opt.isPresent()) {
-            return ResponseUtil.error(ResponseCode.NOT_FOUND);
-        }
 
-        User user = opt.get();
+        User user = this.userRepository.findById(auth.getId()).get();
         user.setEmail(request.getEmail());
         User save = this.userRepository.save(user);
         UserResponse response = this.build(save);
@@ -66,53 +58,56 @@ public class UserService {
     }
 
     public Result<?> changePassword(UserDetailsImpl auth, ChangePasswordRequest request) {
-        if (ValidateUtil.invalidPassword(request.getCurrentPassword())) {
+        if (ValidationUtil.invalidPassword(request.getCurrentPassword())) {
+            log.warn("ChangePassword-[block]:(validation current password). request:{}, uid:{}", request, auth.getId());
             return ResponseUtil.error(ResponseCode.INVALID_PASSWORD);
         }
 
-        if (ValidateUtil.invalidPassword(request.getNewPassword())) {
+        if (ValidationUtil.invalidPassword(request.getNewPassword())) {
+            log.warn("ChangePassword-[block]:(validation new password). request:{}, uid:{}", request, auth.getId());
+            return ResponseUtil.error(ResponseCode.INVALID_NEW_PASSWORD);
+        }
+
+        if (ValidationUtil.invalidPassword(request.getConfirmPassword())) {
+            log.warn("ChangePassword-[block]:(validation confirm password). request:{}, uid:{}", request, auth.getId());
             return ResponseUtil.error(ResponseCode.INVALID_NEW_PASSWORD);
         }
 
         if (!Objects.equals(request.getNewPassword(), request.getConfirmPassword())) {
+            log.warn("ChangePassword-[block]:(password not match). request:{}, uid:{}", request, auth.getId());
             return ResponseUtil.error(ResponseCode.PASSWORD_NOT_MATCH);
         }
 
-        Optional<User> opt = userRepository.findByUsername(auth.getUsername());
-        if (!opt.isPresent()) {
-            return ResponseUtil.error(ResponseCode.NOT_FOUND);
-        }
-
-        User user = opt.get();
+        User user = this.userRepository.findById(auth.getId()).get();
 
         // check password
-        if (notMatchPassword(request.getCurrentPassword(), user.getPassword())) {
+        if (this.notMatchPassword(request.getCurrentPassword(), user.getPassword())) {
             log.warn("ChangePassword-[block]:(incorrect password). request:{}, uid:{}", request, auth.getId());
             return ResponseUtil.error(ResponseCode.INVALID_PASSWORD);
         }
 
         // password encoded
-        String passwordEncoded = passwordEncoder.encode(request.getNewPassword());
+        String passwordEncoded = this.passwordEncoder.encode(request.getNewPassword());
 
         user.setPassword(passwordEncoded);
-        User save = userRepository.save(user);
+        User save = this.userRepository.save(user);
         UserResponse response = this.build(save);
         return ResponseUtil.success(response);
     }
 
     public Result<?> create(RegisterRequest request) {
         // validate
-        if (ValidateUtil.invalidEmail(request.getEmail())) {
+        if (ValidationUtil.invalidEmail(request.getEmail())) {
             log.warn("Create-[block]:(validation email). request:{}", request);
             return ResponseUtil.error(ResponseCode.INVALID_EMAIL);
         }
 
-        if (ValidateUtil.invalidUsername(request.getUsername())) {
+        if (ValidationUtil.invalidUsername(request.getUsername())) {
             log.warn("Create-[block]:(validation username). request:{}", request);
             return ResponseUtil.error(ResponseCode.INVALID_USERNAME);
         }
 
-        if (ValidateUtil.invalidPassword(request.getPassword())) {
+        if (ValidationUtil.invalidPassword(request.getPassword())) {
             log.warn("Create-[block]:(validation password). request:{}", request);
             return ResponseUtil.error(ResponseCode.INVALID_PASSWORD);
         }
@@ -122,13 +117,13 @@ public class UserService {
         String password = request.getPassword();
 
         // check email existed
-        if (userRepository.existsByEmail(email)) {
+        if (this.userRepository.existsByEmail(email)) {
             log.warn("Create-[block]:(email existed). request:{}", request);
             return ResponseUtil.error(ResponseCode.EXISTED_EMAIL);
         }
 
         // check username existed
-        if (userRepository.existsByUsername(username)) {
+        if (this.userRepository.existsByUsername(username)) {
             log.warn("Create-[block]:(username existed). request:{}", request);
             return ResponseUtil.error(ResponseCode.EXISTED_USERNAME);
         }
@@ -151,12 +146,12 @@ public class UserService {
     public Result<?> login(LoginRequest request, HttpServletRequest httpRequest) {
 
         // validate
-        if (ValidateUtil.invalidUsername(request.getUsername())) {
+        if (ValidationUtil.invalidUsername(request.getUsername())) {
             log.debug("Login-[block]:(validation username). request:{}", request);
             return ResponseUtil.error(ResponseCode.INVALID_USERNAME);
         }
 
-        if (ValidateUtil.invalidPassword(request.getPassword())) {
+        if (ValidationUtil.invalidPassword(request.getPassword())) {
             log.debug("Login-[block]:(validation password). request:{}", request);
             return ResponseUtil.error(ResponseCode.INVALID_PASSWORD);
         }
@@ -168,13 +163,13 @@ public class UserService {
         Optional<User> opt = this.userRepository.findByUsername(username);
 
         if (!opt.isPresent()) {
-            log.debug("Login-[block]:(not found). request:{}", request);
+            log.warn("Login-[block]:(not found). request:{}", request);
             return ResponseUtil.error(ResponseCode.INVALID_USERNAME_PASSWORD);
         }
 
         User user = opt.get();
         if (this.notMatchPassword(password, user.getPassword())) {
-            log.debug("Login-[block]:(incorrect password). request:{}", request);
+            log.warn("Login-[block]:(incorrect password). request:{}", request);
             return ResponseUtil.error(ResponseCode.INVALID_USERNAME_PASSWORD);
         }
 
@@ -210,7 +205,7 @@ public class UserService {
         Optional<User> opt = this.userRepository.findByUsername(username);
         if (!opt.isPresent()) {
             log.warn("RefreshToken-[block]:(user not found). request:{}", request);
-            return ResponseUtil.error(ResponseCode.UNAUTHORIZED);
+            return ResponseUtil.unknown();
         }
         User user = opt.get();
         TokenResponse token = this.genToken(user);

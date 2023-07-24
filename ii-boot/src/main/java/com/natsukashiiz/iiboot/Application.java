@@ -7,10 +7,10 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
 
 @EnableConfigurationProperties(JwtProperties.class)
 @SpringBootApplication
-public class IiBootApplication {
+public class Application {
 
     public static void main(String[] args) {
-        SpringApplication.run(IiBootApplication.class, args);
+        SpringApplication.run(Application.class, args);
     }
 
 }

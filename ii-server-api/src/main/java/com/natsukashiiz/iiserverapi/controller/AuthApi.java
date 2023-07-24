@@ -17,21 +17,21 @@ import javax.servlet.http.HttpServletRequest;
 @RequestMapping("/v1/auth")
 public class AuthApi {
     @Resource
-    private UserService service;
+    private UserService userService;
 
     @PostMapping("/signUp")
     public Result<?> signup(@RequestBody RegisterRequest request) {
-        return service.create(request);
+        return this.userService.create(request);
     }
 
     @PostMapping("/signIn")
     public Result<?> login(HttpServletRequest httpRequest, @RequestBody LoginRequest request) {
-        return service.login(request, httpRequest);
+        return this.userService.login(request, httpRequest);
     }
 
     @PostMapping("/refresh")
     public Result<?> refresh(@RequestBody TokenRefreshRequest request) {
-        return service.refreshToken(request);
+        return this.userService.refreshToken(request);
     }
 
 }
