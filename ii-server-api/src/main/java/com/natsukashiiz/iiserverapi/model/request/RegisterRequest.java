@@ -11,7 +11,7 @@ import lombok.ToString;
  * }
  */
 @Data
-@ToString
+@ToString(exclude = "password")
 public class RegisterRequest {
     private String email;
     private String username;
