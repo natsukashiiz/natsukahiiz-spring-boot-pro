@@ -44,7 +44,7 @@ public class UserService {
         return ResponseUtil.success(response);
     }
 
-    public Result<?> update(UserDetailsImpl auth, UpdateUserRequest request) {
+    public Result<?> update(UserDetailsImpl auth, UpdUserRequest request) {
         if (ValidationUtil.invalidEmail(request.getEmail())) {
             log.warn("Update-[block]:(validation email). request:{}, uid:{}", request, auth.getId());
             return ResponseUtil.error(ResponseCode.INVALID_EMAIL);
