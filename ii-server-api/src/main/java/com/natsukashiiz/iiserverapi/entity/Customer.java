@@ -7,7 +7,7 @@ import org.springframework.data.mongodb.core.mapping.Document;
 import javax.persistence.Id;
 import javax.validation.constraints.Email;
 
-@Document(collection = "customers")
+@Document("customers")
 @Data
 public class Customer {
     @Id
