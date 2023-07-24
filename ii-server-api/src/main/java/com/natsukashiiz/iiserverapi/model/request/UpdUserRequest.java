@@ -8,6 +8,6 @@ import lombok.Data;
  * }
  */
 @Data
-public class UpdateUserRequest {
+public class UpdUserRequest {
     private String email;
 }
