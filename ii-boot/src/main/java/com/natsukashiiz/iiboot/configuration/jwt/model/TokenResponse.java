@@ -5,17 +5,17 @@ import lombok.Data;
 
 /**
  * {
- *     "refreshToken": "xxxx",
- *     "accessToken": "xxxx",
- *     "refreshExpire": xxxx,
- *     "accessExpire": xxxx
+ *     access: "xxx",
+ *     refresh: "xxx",
+ *     refreshExpire: 123456789,
+ *     accessExpire: 123456789
  * }
  */
 @Data
 @Builder
 public class TokenResponse {
-    private String refreshToken;
-    private String accessToken;
+    private String access;
+    private String refresh;
     private Long refreshExpire;
     private Long accessExpire;
 }

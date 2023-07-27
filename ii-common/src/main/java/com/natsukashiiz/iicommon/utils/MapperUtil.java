@@ -15,7 +15,7 @@ public class MapperUtil {
     public static <S, T> List<T> mapList(List<S> source, Class<T> targetClass) {
         return source
                 .stream()
-                .map(element -> modelMapper.map(element, targetClass))
+                .map(element -> MapperUtil.mapOne(element, targetClass))
                 .collect(Collectors.toList());
     }
 }

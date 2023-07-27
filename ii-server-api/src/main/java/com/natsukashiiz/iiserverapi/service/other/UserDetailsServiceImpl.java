@@ -1,7 +1,7 @@
 package com.natsukashiiz.iiserverapi.service.other;
 
 import com.natsukashiiz.iiboot.configuration.jwt.Authentication;
-import com.natsukashiiz.iiboot.configuration.jwt.UserDetailsImpl;
+import com.natsukashiiz.iiboot.configuration.jwt.AuthPrincipal;
 import com.natsukashiiz.iiserverapi.entity.User;
 import com.natsukashiiz.iiserverapi.repository.UserRepository;
 import lombok.extern.slf4j.Slf4j;
@@ -19,7 +19,7 @@ public class UserDetailsServiceImpl implements UserDetailsService {
     private UserRepository userRepository;
 
     @Override
-    public UserDetailsImpl loadUserByUsername(String username) throws UsernameNotFoundException {
+    public AuthPrincipal loadUserByUsername(String username) throws UsernameNotFoundException {
         Optional<User> opt = this.userRepository.findByUsername(username);
         if (!opt.isPresent()) {
             log.warn("UserDetailsServiceImpl-[loadUserByUsername](not found)");
@@ -27,7 +27,7 @@ public class UserDetailsServiceImpl implements UserDetailsService {
         }
 
         User user = opt.get();
-        return UserDetailsImpl.build(
+        return AuthPrincipal.build(
                 Authentication.builder()
                         .uid(user.getId())
                         .name(user.getUsername())

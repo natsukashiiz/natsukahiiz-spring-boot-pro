@@ -1,8 +1,10 @@
 package com.natsukashiiz.iiserverapi.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.natsukashiiz.iiboot.configuration.jwt.UserDetailsImpl;
+import com.natsukashiiz.iiboot.configuration.jwt.AuthPrincipal;
 import com.natsukashiiz.iicommon.entity.BaseEntity;
+import com.natsukashiiz.iicommon.utils.MapperUtil;
+import com.natsukashiiz.iiserverapi.model.response.UserResponse;
 import java.util.List;
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -29,13 +31,13 @@ public class User extends BaseEntity {
 
     @JsonIgnore
     @OneToMany(mappedBy = "user", fetch = FetchType.LAZY)
-    List<SignHistory> signHistories;
+    List<SignHistory> signHistory;
 
-    public static User from(UserDetailsImpl ud) {
-        User user = new User();
-        user.setId(ud.getId());
-        user.setUsername(ud.getUsername());
-        user.setEmail(ud.getEmail());
-        return user;
+    public static User from(AuthPrincipal auth) {
+        return MapperUtil.mapOne(auth, User.class);
+    }
+
+    public static UserResponse toResponse(User user) {
+        return MapperUtil.mapOne(user, UserResponse.class);
     }
 }

@@ -4,10 +4,10 @@ import lombok.Data;
 
 /**
  * {
- *     "refreshToken": "xxxx"
+ *     "token": "xxxx"
  * }
  */
 @Data
 public class TokenRefreshRequest {
-    private String refreshToken;
+    private String token;
 }

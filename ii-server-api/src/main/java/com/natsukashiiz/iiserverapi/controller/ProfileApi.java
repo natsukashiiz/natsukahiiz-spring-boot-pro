@@ -1,6 +1,6 @@
 package com.natsukashiiz.iiserverapi.controller;
 
-import com.natsukashiiz.iiboot.configuration.jwt.UserDetailsImpl;
+import com.natsukashiiz.iiboot.configuration.jwt.AuthPrincipal;
 import com.natsukashiiz.iicommon.model.Pagination;
 import com.natsukashiiz.iicommon.model.Result;
 import com.natsukashiiz.iiserverapi.model.request.ChangePasswordRequest;
@@ -25,13 +25,13 @@ public class ProfileApi {
   private SignHistoryService signHistoryService;
 
   @GetMapping
-  public Result<?> getSelf(@AuthenticationPrincipal UserDetailsImpl auth) {
+  public Result<?> getSelf(@AuthenticationPrincipal AuthPrincipal auth) {
     return this.userService.getSelf(auth);
   }
 
   @GetMapping("/signHistory")
   public Result<?> signedHistory(
-      @AuthenticationPrincipal UserDetailsImpl auth,
+      @AuthenticationPrincipal AuthPrincipal auth,
       Pagination pagination
   ) {
     return this.signHistoryService.getAll(auth, pagination);
@@ -39,7 +39,7 @@ public class ProfileApi {
 
   @PatchMapping
   public Result<?> update(
-      @AuthenticationPrincipal UserDetailsImpl auth,
+      @AuthenticationPrincipal AuthPrincipal auth,
       @RequestBody UpdUserRequest request
   ) {
     return this.userService.update(auth, request);
@@ -47,7 +47,7 @@ public class ProfileApi {
 
   @PatchMapping("/password")
   public Result<?> changePassword(
-      @AuthenticationPrincipal UserDetailsImpl auth,
+      @AuthenticationPrincipal AuthPrincipal auth,
       @RequestBody ChangePasswordRequest request
   ) {
     return this.userService.changePassword(auth, request);

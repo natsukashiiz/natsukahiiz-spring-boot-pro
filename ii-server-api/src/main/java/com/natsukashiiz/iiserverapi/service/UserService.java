@@ -2,7 +2,7 @@ package com.natsukashiiz.iiserverapi.service;
 
 import com.natsukashiiz.iiboot.configuration.jwt.Authentication;
 import com.natsukashiiz.iiboot.configuration.jwt.JwtService;
-import com.natsukashiiz.iiboot.configuration.jwt.UserDetailsImpl;
+import com.natsukashiiz.iiboot.configuration.jwt.AuthPrincipal;
 import com.natsukashiiz.iiboot.configuration.jwt.model.TokenResponse;
 import com.natsukashiiz.iicommon.common.DeviceCode;
 import com.natsukashiiz.iicommon.common.ResponseCode;
@@ -38,13 +38,13 @@ public class UserService {
     @Resource
     private JwtService tokenService;
 
-    public Result<?> getSelf(UserDetailsImpl auth) {
+    public Result<?> getSelf(AuthPrincipal auth) {
         User user = this.userRepository.findById(auth.getId()).get();
         UserResponse response = this.build(user);
         return ResponseUtil.success(response);
     }
 
-    public Result<?> update(UserDetailsImpl auth, UpdUserRequest request) {
+    public Result<?> update(AuthPrincipal auth, UpdUserRequest request) {
         if (ValidationUtil.invalidEmail(request.getEmail())) {
             log.warn("Update-[block]:(validation email). request:{}, uid:{}", request, auth.getId());
             return ResponseUtil.error(ResponseCode.INVALID_EMAIL);
@@ -57,7 +57,7 @@ public class UserService {
         return ResponseUtil.success(response);
     }
 
-    public Result<?> changePassword(UserDetailsImpl auth, ChangePasswordRequest request) {
+    public Result<?> changePassword(AuthPrincipal auth, ChangePasswordRequest request) {
         if (ValidationUtil.invalidPassword(request.getCurrentPassword())) {
             log.warn("ChangePassword-[block]:(validation current password). request:{}, uid:{}", request, auth.getId());
             return ResponseUtil.error(ResponseCode.INVALID_PASSWORD);
@@ -190,18 +190,17 @@ public class UserService {
     }
 
     public Result<?> refreshToken(TokenRefreshRequest request) {
-        if (Objects.isNull(request.getRefreshToken())) {
+        if (Objects.isNull(request.getToken())) {
             log.warn("RefreshToken-[block]:(validation refresh token). request:{}", request);
             return ResponseUtil.error(ResponseCode.INVALID_REQUEST);
         }
 
-        String refreshToken = request.getRefreshToken();
-        if (!this.tokenService.validate(refreshToken)) {
+        if (!this.tokenService.validate(request.getToken())) {
             log.warn("RefreshToken-[block]:(refresh token expired). request:{}", request);
             return ResponseUtil.error(ResponseCode.REFRESH_TOKEN_EXPIRE);
         }
 
-        String username = this.tokenService.getUsername(refreshToken);
+        String username = this.tokenService.getUsername(request.getToken());
         Optional<User> opt = this.userRepository.findByUsername(username);
         if (!opt.isPresent()) {
             log.warn("RefreshToken-[block]:(user not found). request:{}", request);

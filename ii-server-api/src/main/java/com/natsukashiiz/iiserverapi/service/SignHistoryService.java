@@ -1,6 +1,6 @@
 package com.natsukashiiz.iiserverapi.service;
 
-import com.natsukashiiz.iiboot.configuration.jwt.UserDetailsImpl;
+import com.natsukashiiz.iiboot.configuration.jwt.AuthPrincipal;
 import com.natsukashiiz.iicommon.model.Pagination;
 import com.natsukashiiz.iicommon.model.Result;
 import com.natsukashiiz.iicommon.utils.CommonUtil;
@@ -20,7 +20,7 @@ public class SignHistoryService {
     @Resource
     private SignedHistoryRepository signedHistoryRepository;
 
-    public Result<?> getAll(UserDetailsImpl auth, Pagination paginate) {
+    public Result<?> getAll(AuthPrincipal auth, Pagination paginate) {
         Pageable pageable = CommonUtil.getPaginate(paginate);
         Long count = this.signedHistoryRepository.countByUid(auth.getId());
         List<com.natsukashiiz.iiserverapi.entity.SignHistory> histories = this.signedHistoryRepository.findByUid(auth.getId(), pageable);

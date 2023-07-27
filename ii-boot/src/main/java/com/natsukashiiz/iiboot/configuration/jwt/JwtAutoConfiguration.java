@@ -42,11 +42,7 @@ public class JwtAutoConfiguration {
     @Bean
     @ConditionalOnMissingBean(JwtService.class)
     public JwtService jwtService() {
-        return new JwtService(
-                jwtProperties,
-                jwtEncoder(),
-                jwtDecoder()
-        );
+        return new JwtService();
     }
 
     @Bean

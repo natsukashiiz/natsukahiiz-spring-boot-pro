@@ -2,6 +2,7 @@ package com.natsukashiiz.iiboot.configuration.jwt;
 
 import com.natsukashiiz.iiboot.configuration.jwt.model.Token;
 import com.natsukashiiz.iiboot.configuration.jwt.model.TokenResponse;
+import javax.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.oauth2.jwt.*;
 import org.springframework.stereotype.Service;
@@ -12,23 +13,20 @@ import java.util.UUID;
 @Service
 @Slf4j
 public class JwtService {
-    private final JwtProperties jwtProperties;
-    private final JwtEncoder encoder;
-    private final JwtDecoder decoder;
-
-    public JwtService(JwtProperties jwtProperties, JwtEncoder jwtEncoder, JwtDecoder decoder) {
-        this.jwtProperties = jwtProperties;
-        this.encoder = jwtEncoder;
-        this.decoder = decoder;
-    }
+    @Resource
+    private  JwtProperties jwtProperties;
+    @Resource
+    private  JwtEncoder encoder;
+    @Resource
+    private  JwtDecoder decoder;
 
     public TokenResponse generateToken(Authentication authentication) {
         Token accessToken = this.generateAccessToken(authentication);
         Token refreshToken = this.generateRefreshToken(authentication);
         return TokenResponse.builder()
-                .accessToken(accessToken.getToken())
+                .access(accessToken.getToken())
                 .accessExpire(accessToken.getExpire())
-                .refreshToken(refreshToken.getToken())
+                .refresh(refreshToken.getToken())
                 .refreshExpire(refreshToken.getExpire())
                 .build();
     }
@@ -69,7 +67,7 @@ public class JwtService {
             this.decoder.decode(token);
             return true;
         } catch (JwtException e) {
-            log.debug("TokenService-[validate](invalid). token: {}, error: {}", token, e.getMessage());
+            log.debug("JwtService-[validate](invalid). token: {}, error: {}", token, e.getMessage());
             return false;
         }
     }

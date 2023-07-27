@@ -21,7 +21,7 @@ public enum ResponseCode implements BaseState<ResponseCode>{
     NO_DATA(411),
     TOKEN_EXPIRE(510),
     REFRESH_TOKEN_EXPIRE(511),
-    UNAUTHORIZED(888),
+    UNAUTHORIZED(910),
     UNKNOWN(999);
 
     private final Integer value;

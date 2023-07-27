@@ -39,9 +39,9 @@ public class AuthTokenFilter extends OncePerRequestFilter {
             if (Objects.nonNull(jwt) && tokenService.validate(jwt)) {
 
                 String username = tokenService.getUsername(jwt);
-                UserDetailsImpl userDetails = (UserDetailsImpl) userDetailsService.loadUserByUsername(username);
-                log.warn("AuthTokenFilter-[doFilterInternal] userDetails: {}", userDetails);
+                AuthPrincipal userDetails = (AuthPrincipal) userDetailsService.loadUserByUsername(username);
                 if (Objects.isNull(userDetails)) {
+                    log.warn("AuthTokenFilter-[warn](user not found). username: {}", username);
                     filterChain.doFilter(request, response);
                     return;
                 }
