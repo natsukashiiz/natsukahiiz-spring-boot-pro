@@ -1,5 +1,6 @@
 package com.natsukashiiz.iiboot.configuration.jwt;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Builder;
 import lombok.Data;
 
@@ -9,5 +10,6 @@ public class Authentication {
     private Long uid;
     private String name;
     private String email;
+    @JsonIgnore
     private String password;
 }

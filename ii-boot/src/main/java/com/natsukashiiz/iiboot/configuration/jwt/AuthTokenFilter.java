@@ -1,7 +1,13 @@
 package com.natsukashiiz.iiboot.configuration.jwt;
 
+import java.io.IOException;
+import java.util.Objects;
+import javax.annotation.Resource;
+import javax.servlet.FilterChain;
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.lang.NonNull;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -10,14 +16,6 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.util.StringUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
-
-import javax.annotation.Resource;
-import javax.servlet.FilterChain;
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import java.io.IOException;
-import java.util.Objects;
 
 @Slf4j
 public class AuthTokenFilter extends OncePerRequestFilter {
@@ -42,6 +40,7 @@ public class AuthTokenFilter extends OncePerRequestFilter {
 
                 String username = tokenService.getUsername(jwt);
                 UserDetailsImpl userDetails = (UserDetailsImpl) userDetailsService.loadUserByUsername(username);
+                log.warn("AuthTokenFilter-[doFilterInternal] userDetails: {}", userDetails);
                 if (Objects.isNull(userDetails)) {
                     filterChain.doFilter(request, response);
                     return;

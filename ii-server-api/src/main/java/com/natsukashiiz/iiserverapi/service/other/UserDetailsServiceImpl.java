@@ -31,6 +31,7 @@ public class UserDetailsServiceImpl implements UserDetailsService {
                 Authentication.builder()
                         .uid(user.getId())
                         .name(user.getUsername())
+                        .email(user.getEmail())
                         .build()
         );
     }
