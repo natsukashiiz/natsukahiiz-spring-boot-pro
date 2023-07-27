@@ -64,9 +64,9 @@ public class CommonUtils {
     }
 
     public static Http getHttp(HttpServletRequest request) {
-        String ipv4 = CommonUtils.getIpAddress(request);
-        String userAgent = CommonUtils.getUserAgent(request);
-        DeviceCode device = CommonUtils.getDevice(userAgent);
+        String ipv4 = getIpAddress(request);
+        String userAgent = getUserAgent(request);
+        DeviceCode device = getDevice(userAgent);
 
        return Http.builder()
                .ipv4(ipv4)
