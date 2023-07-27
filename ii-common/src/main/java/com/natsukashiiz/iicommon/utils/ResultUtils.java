@@ -21,7 +21,7 @@ public class ResultUtils {
     }
 
     public static Result<?> successEmpty() {
-        return ResultUtils.successList(Collections.emptyList(), 0L);
+        return successList(Collections.emptyList(), 0L);
     }
 
     public static <T> Result<?> successList(List<T> result, Long records) {
