@@ -2,7 +2,7 @@ package com.natsukashiiz.iicommon.common;
 
 import java.util.Optional;
 
-public enum ResponseCode implements BaseState<ResponseCode>{
+public enum ResponseCode implements BaseState<ResponseCode, Integer>{
     SUCCESS(0),
     INVALID_REQUEST(210),
     INVALID_EMAIL(211),

@@ -8,9 +8,11 @@ import com.natsukashiiz.iiserverapi.model.request.UpdUserRequest;
 import com.natsukashiiz.iiserverapi.service.SignHistoryService;
 import com.natsukashiiz.iiserverapi.service.UserService;
 import javax.annotation.Resource;
+import javax.servlet.http.HttpServletRequest;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -35,6 +37,14 @@ public class ProfileApi {
       Pagination pagination
   ) {
     return this.signHistoryService.getAll(auth, pagination);
+  }
+
+  @PostMapping("/signHistory")
+  public Result<?> signedHistory(
+          HttpServletRequest servletRequest,
+          @AuthenticationPrincipal AuthPrincipal auth
+  ) {
+    return this.signHistoryService.save(servletRequest, auth);
   }
 
   @PatchMapping

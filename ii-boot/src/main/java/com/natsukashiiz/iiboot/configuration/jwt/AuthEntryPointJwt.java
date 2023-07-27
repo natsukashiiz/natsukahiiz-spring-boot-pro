@@ -1,7 +1,7 @@
 package com.natsukashiiz.iiboot.configuration.jwt;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.natsukashiiz.iicommon.utils.ResponseUtil;
+import com.natsukashiiz.iicommon.utils.ResultUtils;
 import java.io.IOException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -17,6 +17,6 @@ public class AuthEntryPointJwt implements AuthenticationEntryPoint {
     public void commence(HttpServletRequest request, HttpServletResponse response, AuthenticationException authException) throws IOException {
         log.debug("AuthEntryPointJwt-[block](unauthorized). error:{}", authException.getLocalizedMessage());
         final ObjectMapper mapper = new ObjectMapper();
-        mapper.writeValue(response.getOutputStream(), ResponseUtil.unauthorized());
+        mapper.writeValue(response.getOutputStream(), ResultUtils.unauthorized());
     }
 }

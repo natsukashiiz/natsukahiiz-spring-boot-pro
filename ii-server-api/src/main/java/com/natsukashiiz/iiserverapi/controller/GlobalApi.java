@@ -1,7 +1,7 @@
 package com.natsukashiiz.iiserverapi.controller;
 
 import com.natsukashiiz.iicommon.model.Result;
-import com.natsukashiiz.iicommon.utils.ResponseUtil;
+import com.natsukashiiz.iicommon.utils.ResultUtils;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -11,6 +11,6 @@ import org.springframework.web.bind.annotation.RestController;
 public class GlobalApi {
     @GetMapping
     public Result<?> get() {
-        return ResponseUtil.success();
+        return ResultUtils.success();
     }
 }

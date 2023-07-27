@@ -1,30 +1,33 @@
 package com.natsukashiiz.iiserverapi.service;
 
+import com.natsukashiiz.iiboot.configuration.jwt.AuthPrincipal;
 import com.natsukashiiz.iiboot.configuration.jwt.Authentication;
 import com.natsukashiiz.iiboot.configuration.jwt.JwtService;
-import com.natsukashiiz.iiboot.configuration.jwt.AuthPrincipal;
 import com.natsukashiiz.iiboot.configuration.jwt.model.TokenResponse;
-import com.natsukashiiz.iicommon.common.DeviceCode;
 import com.natsukashiiz.iicommon.common.ResponseCode;
+import com.natsukashiiz.iicommon.model.Http;
 import com.natsukashiiz.iicommon.model.Result;
-import com.natsukashiiz.iicommon.utils.CommonUtil;
-import com.natsukashiiz.iicommon.utils.MapperUtil;
-import com.natsukashiiz.iicommon.utils.ResponseUtil;
-import com.natsukashiiz.iicommon.utils.ValidationUtil;
+import com.natsukashiiz.iicommon.utils.CommonUtils;
+import com.natsukashiiz.iicommon.utils.MapperUtils;
+import com.natsukashiiz.iicommon.utils.ResultUtils;
+import com.natsukashiiz.iicommon.utils.ValidationUtils;
 import com.natsukashiiz.iiserverapi.entity.SignHistory;
 import com.natsukashiiz.iiserverapi.entity.User;
-import com.natsukashiiz.iiserverapi.model.request.*;
+import com.natsukashiiz.iiserverapi.model.request.ChangePasswordRequest;
+import com.natsukashiiz.iiserverapi.model.request.LoginRequest;
+import com.natsukashiiz.iiserverapi.model.request.RegisterRequest;
+import com.natsukashiiz.iiserverapi.model.request.TokenRefreshRequest;
+import com.natsukashiiz.iiserverapi.model.request.UpdUserRequest;
 import com.natsukashiiz.iiserverapi.model.response.UserResponse;
-import com.natsukashiiz.iiserverapi.repository.SignedHistoryRepository;
+import com.natsukashiiz.iiserverapi.repository.SignHistoryRepository;
 import com.natsukashiiz.iiserverapi.repository.UserRepository;
+import java.util.Objects;
+import java.util.Optional;
+import javax.annotation.Resource;
+import javax.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-
-import javax.annotation.Resource;
-import javax.servlet.http.HttpServletRequest;
-import java.util.Objects;
-import java.util.Optional;
 
 @Service
 @Slf4j
@@ -32,7 +35,7 @@ public class UserService {
     @Resource
     private UserRepository userRepository;
     @Resource
-    private SignedHistoryRepository historyRepository;
+    private SignHistoryRepository historyRepository;
     @Resource
     private PasswordEncoder passwordEncoder;
     @Resource
@@ -41,41 +44,41 @@ public class UserService {
     public Result<?> getSelf(AuthPrincipal auth) {
         User user = this.userRepository.findById(auth.getId()).get();
         UserResponse response = this.build(user);
-        return ResponseUtil.success(response);
+        return ResultUtils.success(response);
     }
 
     public Result<?> update(AuthPrincipal auth, UpdUserRequest request) {
-        if (ValidationUtil.invalidEmail(request.getEmail())) {
+        if (ValidationUtils.invalidEmail(request.getEmail())) {
             log.warn("Update-[block]:(validation email). request:{}, uid:{}", request, auth.getId());
-            return ResponseUtil.error(ResponseCode.INVALID_EMAIL);
+            return ResultUtils.error(ResponseCode.INVALID_EMAIL);
         }
 
         User user = this.userRepository.findById(auth.getId()).get();
         user.setEmail(request.getEmail());
         User save = this.userRepository.save(user);
         UserResponse response = this.build(save);
-        return ResponseUtil.success(response);
+        return ResultUtils.success(response);
     }
 
     public Result<?> changePassword(AuthPrincipal auth, ChangePasswordRequest request) {
-        if (ValidationUtil.invalidPassword(request.getCurrentPassword())) {
+        if (ValidationUtils.invalidPassword(request.getCurrentPassword())) {
             log.warn("ChangePassword-[block]:(validation current password). request:{}, uid:{}", request, auth.getId());
-            return ResponseUtil.error(ResponseCode.INVALID_PASSWORD);
+            return ResultUtils.error(ResponseCode.INVALID_PASSWORD);
         }
 
-        if (ValidationUtil.invalidPassword(request.getNewPassword())) {
+        if (ValidationUtils.invalidPassword(request.getNewPassword())) {
             log.warn("ChangePassword-[block]:(validation new password). request:{}, uid:{}", request, auth.getId());
-            return ResponseUtil.error(ResponseCode.INVALID_NEW_PASSWORD);
+            return ResultUtils.error(ResponseCode.INVALID_NEW_PASSWORD);
         }
 
-        if (ValidationUtil.invalidPassword(request.getConfirmPassword())) {
+        if (ValidationUtils.invalidPassword(request.getConfirmPassword())) {
             log.warn("ChangePassword-[block]:(validation confirm password). request:{}, uid:{}", request, auth.getId());
-            return ResponseUtil.error(ResponseCode.INVALID_NEW_PASSWORD);
+            return ResultUtils.error(ResponseCode.INVALID_NEW_PASSWORD);
         }
 
         if (!Objects.equals(request.getNewPassword(), request.getConfirmPassword())) {
             log.warn("ChangePassword-[block]:(password not match). request:{}, uid:{}", request, auth.getId());
-            return ResponseUtil.error(ResponseCode.PASSWORD_NOT_MATCH);
+            return ResultUtils.error(ResponseCode.PASSWORD_NOT_MATCH);
         }
 
         User user = this.userRepository.findById(auth.getId()).get();
@@ -83,7 +86,7 @@ public class UserService {
         // check password
         if (this.notMatchPassword(request.getCurrentPassword(), user.getPassword())) {
             log.warn("ChangePassword-[block]:(incorrect password). request:{}, uid:{}", request, auth.getId());
-            return ResponseUtil.error(ResponseCode.INVALID_PASSWORD);
+            return ResultUtils.error(ResponseCode.INVALID_PASSWORD);
         }
 
         // password encoded
@@ -92,24 +95,24 @@ public class UserService {
         user.setPassword(passwordEncoded);
         User save = this.userRepository.save(user);
         UserResponse response = this.build(save);
-        return ResponseUtil.success(response);
+        return ResultUtils.success(response);
     }
 
     public Result<?> create(RegisterRequest request) {
         // validate
-        if (ValidationUtil.invalidEmail(request.getEmail())) {
+        if (ValidationUtils.invalidEmail(request.getEmail())) {
             log.warn("Create-[block]:(validation email). request:{}", request);
-            return ResponseUtil.error(ResponseCode.INVALID_EMAIL);
+            return ResultUtils.error(ResponseCode.INVALID_EMAIL);
         }
 
-        if (ValidationUtil.invalidUsername(request.getUsername())) {
+        if (ValidationUtils.invalidUsername(request.getUsername())) {
             log.warn("Create-[block]:(validation username). request:{}", request);
-            return ResponseUtil.error(ResponseCode.INVALID_USERNAME);
+            return ResultUtils.error(ResponseCode.INVALID_USERNAME);
         }
 
-        if (ValidationUtil.invalidPassword(request.getPassword())) {
+        if (ValidationUtils.invalidPassword(request.getPassword())) {
             log.warn("Create-[block]:(validation password). request:{}", request);
-            return ResponseUtil.error(ResponseCode.INVALID_PASSWORD);
+            return ResultUtils.error(ResponseCode.INVALID_PASSWORD);
         }
 
         String email = request.getEmail();
@@ -119,13 +122,13 @@ public class UserService {
         // check email existed
         if (this.userRepository.existsByEmail(email)) {
             log.warn("Create-[block]:(email existed). request:{}", request);
-            return ResponseUtil.error(ResponseCode.EXISTED_EMAIL);
+            return ResultUtils.error(ResponseCode.EXISTED_EMAIL);
         }
 
         // check username existed
         if (this.userRepository.existsByUsername(username)) {
             log.warn("Create-[block]:(username existed). request:{}", request);
-            return ResponseUtil.error(ResponseCode.EXISTED_USERNAME);
+            return ResultUtils.error(ResponseCode.EXISTED_USERNAME);
         }
 
         // encode password
@@ -140,20 +143,20 @@ public class UserService {
         // save
         User save = this.userRepository.save(entity);
         UserResponse response = this.build(save);
-        return ResponseUtil.success(response);
+        return ResultUtils.success(response);
     }
 
     public Result<?> login(LoginRequest request, HttpServletRequest httpRequest) {
 
         // validate
-        if (ValidationUtil.invalidUsername(request.getUsername())) {
+        if (ValidationUtils.invalidUsername(request.getUsername())) {
             log.debug("Login-[block]:(validation username). request:{}", request);
-            return ResponseUtil.error(ResponseCode.INVALID_USERNAME);
+            return ResultUtils.error(ResponseCode.INVALID_USERNAME);
         }
 
-        if (ValidationUtil.invalidPassword(request.getPassword())) {
+        if (ValidationUtils.invalidPassword(request.getPassword())) {
             log.debug("Login-[block]:(validation password). request:{}", request);
-            return ResponseUtil.error(ResponseCode.INVALID_PASSWORD);
+            return ResultUtils.error(ResponseCode.INVALID_PASSWORD);
         }
 
         String username = request.getUsername();
@@ -164,51 +167,49 @@ public class UserService {
 
         if (!opt.isPresent()) {
             log.warn("Login-[block]:(not found). request:{}", request);
-            return ResponseUtil.error(ResponseCode.INVALID_USERNAME_PASSWORD);
+            return ResultUtils.error(ResponseCode.INVALID_USERNAME_PASSWORD);
         }
 
         User user = opt.get();
         if (this.notMatchPassword(password, user.getPassword())) {
             log.warn("Login-[block]:(incorrect password). request:{}", request);
-            return ResponseUtil.error(ResponseCode.INVALID_USERNAME_PASSWORD);
+            return ResultUtils.error(ResponseCode.INVALID_USERNAME_PASSWORD);
         }
 
-        String ipv4 = CommonUtil.getIpAddress(httpRequest);
-        String userAgent = CommonUtil.getUserAgent(httpRequest);
-        DeviceCode device = CommonUtil.getDevice(userAgent);
+        Http http = CommonUtils.getHttp(httpRequest);
 
-        // save signed history
+        // save sign history
         SignHistory history = new SignHistory();
         history.setUser(user);
-        history.setIpv4(ipv4);
-        history.setDevice(device.value());
-        history.setUa(userAgent);
+        history.setIpv4(http.getIpv4());
+        history.setDevice(http.getDevice().value());
+        history.setUa(http.getUa());
         this.historyRepository.save(history);
 
         // generate token
-        return ResponseUtil.success(this.genToken(user));
+        return ResultUtils.success(this.genToken(user));
     }
 
     public Result<?> refreshToken(TokenRefreshRequest request) {
         if (Objects.isNull(request.getToken())) {
             log.warn("RefreshToken-[block]:(validation refresh token). request:{}", request);
-            return ResponseUtil.error(ResponseCode.INVALID_REQUEST);
+            return ResultUtils.unknown();
         }
 
         if (!this.tokenService.validate(request.getToken())) {
             log.warn("RefreshToken-[block]:(refresh token expired). request:{}", request);
-            return ResponseUtil.error(ResponseCode.REFRESH_TOKEN_EXPIRE);
+            return ResultUtils.error(ResponseCode.REFRESH_TOKEN_EXPIRE);
         }
 
         String username = this.tokenService.getUsername(request.getToken());
         Optional<User> opt = this.userRepository.findByUsername(username);
         if (!opt.isPresent()) {
             log.warn("RefreshToken-[block]:(user not found). request:{}", request);
-            return ResponseUtil.unknown();
+            return ResultUtils.unknown();
         }
         User user = opt.get();
         TokenResponse token = this.genToken(user);
-        return ResponseUtil.success(token);
+        return ResultUtils.success(token);
     }
 
     private TokenResponse genToken(User user) {
@@ -226,6 +227,6 @@ public class UserService {
     }
 
     private UserResponse build(User user) {
-        return MapperUtil.mapOne(user, UserResponse.class);
+        return MapperUtils.mapOne(user, UserResponse.class);
     }
 }

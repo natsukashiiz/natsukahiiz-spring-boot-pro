@@ -1,12 +1,6 @@
 package com.natsukashiiz.iiserverapi.model.response;
 
-import lombok.Builder;
 import lombok.Data;
-import lombok.Getter;
-import lombok.Setter;
-
-import javax.validation.constraints.NotNull;
-import java.time.LocalDateTime;
 
 /**
  * {
@@ -17,12 +11,7 @@ import java.time.LocalDateTime;
  */
 @Data
 public class UserResponse {
-    @NotNull
     private Long id;
-    @NotNull
     private String email;
-    @NotNull
     private String username;
-    @NotNull
-    private LocalDateTime cdt;
 }

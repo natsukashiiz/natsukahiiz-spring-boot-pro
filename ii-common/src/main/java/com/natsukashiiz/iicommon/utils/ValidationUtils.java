@@ -2,7 +2,7 @@ package com.natsukashiiz.iicommon.utils;
 
 import java.util.Objects;
 
-public class ValidationUtil {
+public class ValidationUtils {
     private static final String emailRegex = "^[\\w-\\.]+@([\\w-]+\\.)+[\\w-]{2,4}$";
     private static final String ipv4Regex = "^([0-9]{1,3})\\.([0-9]{1,3})\\.([0-9]{1,3})\\.([0-9]{1,3})$";
 

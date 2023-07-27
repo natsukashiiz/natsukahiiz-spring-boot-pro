@@ -2,7 +2,7 @@ package com.natsukashiiz.iicommon.common;
 
 import java.util.Optional;
 
-public enum DeviceCode implements BaseState<DeviceCode> {
+public enum DeviceCode implements BaseState<DeviceCode, Integer> {
     ANDROID(10),
     IPHONE(20),
     WINDOWS(30),

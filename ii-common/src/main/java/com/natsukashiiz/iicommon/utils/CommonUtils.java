@@ -1,6 +1,7 @@
 package com.natsukashiiz.iicommon.utils;
 
 import com.natsukashiiz.iicommon.common.DeviceCode;
+import com.natsukashiiz.iicommon.model.Http;
 import com.natsukashiiz.iicommon.model.Pagination;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.BeanWrapper;
@@ -14,7 +15,11 @@ import java.util.HashSet;
 import java.util.Set;
 
 
-public class CommonUtil {
+public class CommonUtils {
+    public static Pageable getPaginate(Pagination paginate) {
+        return PageRequest.of(paginate.getPage() > 0 ? paginate.getPage() - 1 : 0, paginate.getLimit());
+    }
+
     public static String getUserAgent(HttpServletRequest request) {
         return request.getHeader(HttpHeaders.USER_AGENT);
     }
@@ -42,10 +47,6 @@ public class CommonUtil {
         return ip;
     }
 
-    public static Pageable getPaginate(Pagination paginate) {
-        return PageRequest.of(paginate.getPage() > 0 ? paginate.getPage() - 1 : 0, paginate.getLimit());
-    }
-
     public static DeviceCode getDevice(String userAgent) {
         if (userAgent.contains("Android")) {
             return DeviceCode.ANDROID;
@@ -62,6 +63,17 @@ public class CommonUtil {
         }
     }
 
+    public static Http getHttp(HttpServletRequest request) {
+        String ipv4 = CommonUtils.getIpAddress(request);
+        String userAgent = CommonUtils.getUserAgent(request);
+        DeviceCode device = CommonUtils.getDevice(userAgent);
+
+       return Http.builder()
+               .ipv4(ipv4)
+               .ua(userAgent)
+               .device(device)
+               .build();
+    }
 
     public static void copyNonNullProperties(Object src, Object target) {
         BeanUtils.copyProperties(src, target, getNullPropertyNames(src));

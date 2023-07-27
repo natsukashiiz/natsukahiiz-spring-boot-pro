@@ -2,14 +2,14 @@ package com.natsukashiiz.iiserverapi.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.natsukashiiz.iicommon.entity.BaseEntity;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.FetchType;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
-import org.hibernate.annotations.ColumnDefault;
 import org.hibernate.annotations.Comment;
-import org.hibernate.annotations.Fetch;
-import org.hibernate.annotations.FetchMode;
-
-import javax.persistence.*;
 
 @EqualsAndHashCode(callSuper = true)
 @Entity(name = "tb_sign_history")
@@ -34,7 +34,7 @@ public class SignHistory extends BaseEntity {
     @JsonIgnore
     private User user;
 
-    @Column(name = "uid", updatable = false, insertable = false)
+    @Column(name = "uid", nullable = false, updatable = false, insertable = false)
     @Comment("id of user")
     private Long uid;
 }
