@@ -26,6 +26,9 @@ public class SignHistoryService {
     public Result<?> getAll(AuthPrincipal auth, Pagination paginate) {
         Pageable pageable = CommonUtils.getPaginate(paginate);
         Long count = this.signHistoryRepository.countByUid(auth.getId());
+        if (count == 0) {
+            return ResultUtils.successEmpty();
+        }
         List<SignHistory> histories = this.signHistoryRepository.findByUid(
                 auth.getId(), pageable);
         List<SignHistoryResponse> response = MapperUtils.mapList(
